@@ -37,6 +37,7 @@ export const VCalendar = genericComponent<VCalendarSlots>()({
     next: null,
     prev: null,
     'update:modelValue': null,
+    'click:date': null,
   },
 
   setup (props, { emit, slots }) {
@@ -73,6 +74,12 @@ export const VCalendar = genericComponent<VCalendarSlots>()({
     function onClickToday () {
       model.value = [adapter.date()]
     }
+
+    const onDateClick = (date) => {
+      model.value = [date];
+      emit('update:modelValue', model.value);
+      emit('click:date', date);
+    };
 
     const title = computed(() => {
       return adapter.format(displayValue.value, 'monthAndYear')
@@ -149,13 +156,14 @@ export const VCalendar = genericComponent<VCalendarSlots>()({
                       !props.hideWeekNumber ? <div class="v-calendar-month__weeknumber">{ weekNumbers.value[wi] }</div> : '',
                       week.map(day => (
                         <VCalendarMonthDay
-                          color={ adapter.isSameDay(adapter.date(), day.date) ? 'primary' : undefined }
+                          color={ adapter.isSameDay(adapter.date(), day.date) || adapter.isSameDay(model.value[0], day.date) ? 'primary' : undefined }
                           day={ day }
                           title={ day ? adapter.format(day.date, 'dayOfMonth') : 'NaN' }
                           events={ props.events?.filter(e => adapter.isSameDay(day.date, e.start) || adapter.isSameDay(day.date, e.end)) }
                           v-slots={{
                             event: slots.event,
                           }}
+                          onClick:date={() => onDateClick(day.date)}
                         ></VCalendarMonthDay>
                       )),
                     ]
